@@ -1,0 +1,24 @@
+<%- include("header") -%>
+
+    <div class="time-date">
+        <h1><%= listTitle %></h1>
+        <h1><%= timeOfDay %></h1>
+    </div>
+        
+    <div class="box">
+        <h2 id="heading">To-do</h2>
+        <% for(let i = 0; i < newListItems.length; i++) { %>
+            <div class="item">
+                <input type="checkbox">
+                    <p><%= newListItems[i] %></p>
+            </div>
+        <% } %>
+            
+        <!-- Create a post request to the home route -->
+        <form action="/" method="post">
+            <input type="text" name="newTask" placeholder="Add New Item" autocomplete="off">
+            <button type="submit" name="list" value=<%= listTitle %>>+</button>
+        </form>
+    </div>
+
+<%- include("footer") -%>
