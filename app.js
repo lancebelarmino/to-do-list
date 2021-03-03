@@ -6,61 +6,116 @@ const app = express();
 const port = 3000;
 const index = require(__dirname + '/index.js');
 
-let items = [];
-let workItems = [];
+app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/public', express.static(__dirname + '/public'));
 
-app.set('view engine', 'ejs')
-app.use(bodyParser.urlencoded({extended: true}))
-app.use('/public', express.static(__dirname + '/public'))
+
+
+/*** Mongoose Setup ***/
+mongoose.connect('mongodb://localhost:27017/to-do-list', { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true
+});
+
+ // Home
+const itemsSchema = { name: String };
+const Item = mongoose.model('Item', itemsSchema);
+
+// Custom List
+const listSchema = {
+    name: String,
+    items: [itemsSchema]
+}
+const List = mongoose.model("List", listSchema);
 
 
 
 /*** Home Page ***/
 app.get('/', (req, res) => {
-    let day = index.getDate();
-    let currentTime = index.getTime();
+    const day = index.getDate();
+    const currentTime = index.getTime();
 
-    // Display content
-    res.render('list', {
-        listTitle: day,
-        timeOfDay: currentTime,
-        newListItems: items
-    })
+    Item.find((err, items) => {
+        if (!err) {
+            res.render('list', {
+                listTitle: 'Home',
+                dayAndDate: day,
+                timeOfDay: currentTime,
+                newListItems: items
+            });
+        } else {
+            console.log(err);
+        }
+    });
 })
 
 app.post('/', (req, res) => {
-    // Tap into request, search and retrieve for the value in the body
-    let newItem = req.body.newTask;
+    const userInput = req.body.newTask;
+    const listName = req.body.list;
+    const newItem = new Item({ name: userInput });
 
-    if (req.body.list === 'Work') {
-        workItems.push(newItem);
-        res.redirect('/work')
+    if (listName === 'Home') {
+        newItem.save();
+        res.redirect('/');
     } else {
-        items.push(newItem);
-        res.redirect('/')
+        List.findOne({ name: listName }, (err, customList) => {
+            console.log(listName);
+            customList.items.push(newItem);
+            customList.save();
+            res.redirect('/' + listName);
+        });
     }
-})
+});
 
 
 
-/*** Work Page ***/
-app.get('/work', (req, res) => {
-    let currentTime = index.getTime();
+/*** Custom Page ***/
+app.get('/:customListName', (req, res) => {
+    const day = index.getDate();
+    const currentTime = index.getTime();
+    const customListName = _.capitalize(req.params.customListName);
 
-    res.render('list', {
-        listTitle: 'Work List',
-        timeOfDay: currentTime,
-        newListItems: workItems
-    })
-})
+    List.findOne({ name: customListName }, (err, customList) => {
+        if (!err) {
+            if (!customList) {
+                const list = new List({ name: customListName });
+                list.save(() => res.redirect('/' + customListName));
+            } else {
+                res.render('list', {
+                    listTitle: customList.name,
+                    dayAndDate: day,
+                    timeOfDay: currentTime,
+                    newListItems: customList.items
+                });
+            }
+        }
+    });
+});
 
 
 
-/*** About Page ***/
-app.get('/about', (req, res) => {
-    res.render('about');
-})
+/*** Delete Functionality ***/
+app.post('/delete', (req, res) => {
+    const deletedItemId = req.body.checkboxItem;
+    const listName = req.body.listName;
 
+    if (listName === 'Home') {
+        Item.findByIdAndDelete(deletedItemId, (err) =>{
+            if (!err) {
+                res.redirect('/');
+            } else {
+                console.log(err);
+            }
+        });
+    } else {
+        List.findOneAndUpdate({ name: listName }, {$pull: { items: { _id: deletedItemId }}}, (err, foundList) => {
+            if (!err) {
+                res.redirect('/' + listName);
+            }
+        });
+    }
+});
 
 
 /*** Port Setup ***/
