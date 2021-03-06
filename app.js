@@ -1,10 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const _ = require('lodash');
+var _ = require('lodash');
 const app = express();
 const port = 3000;
-const index = require(__dirname + '/index.js');
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,22 +32,17 @@ const List = mongoose.model("List", listSchema);
 
 /*** Home Page ***/
 app.get('/', (req, res) => {
-    const day = index.getDate();
-    const currentTime = index.getTime();
-
     Item.find((err, items) => {
         if (!err) {
             res.render('list', {
                 listTitle: 'Home',
-                dayAndDate: day,
-                timeOfDay: currentTime,
                 newListItems: items
             });
         } else {
             console.log(err);
         }
     });
-})
+});
 
 app.post('/', (req, res) => {
     const userInput = req.body.newTask;
@@ -72,8 +66,6 @@ app.post('/', (req, res) => {
 
 /*** Custom Page ***/
 app.get('/:customListName', (req, res) => {
-    const day = index.getDate();
-    const currentTime = index.getTime();
     const customListName = _.capitalize(req.params.customListName);
 
     List.findOne({ name: customListName }, (err, customList) => {
@@ -84,8 +76,6 @@ app.get('/:customListName', (req, res) => {
             } else {
                 res.render('list', {
                     listTitle: customList.name,
-                    dayAndDate: day,
-                    timeOfDay: currentTime,
                     newListItems: customList.items
                 });
             }

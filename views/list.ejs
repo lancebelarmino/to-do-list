@@ -1,12 +1,9 @@
 <%- include("header") -%>
 
-    <div class="time-date">
-        <h1><%= dayAndDate %></h1>
-        <h1><%= timeOfDay %></h1>
-    </div>
+    <h1><%= listTitle %></h1>
         
     <div class="box">
-        <h2 id="heading"><%= listTitle %> To-do</h2>
+        <h2 id="heading">To-do</h2>
 
         <% newListItems.forEach((item) => { %>
             <form action="/delete" method="post">
