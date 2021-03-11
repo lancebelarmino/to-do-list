@@ -12,7 +12,7 @@ app.use('/public', express.static(__dirname + '/public'));
 
 
 /*** Mongoose Setup ***/
-mongoose.connect('mongodb://localhost:27017/to-do-list', { 
+mongoose.connect('mongodb+srv://admin-lance:xO7zlkR9NiwmTrj0@cluster0.iyljx.mongodb.net/to-do-list?retryWrites=true&w=majority', { 
     useNewUrlParser: true, 
     useUnifiedTopology: true
 });
