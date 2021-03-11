@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 var _ = require('lodash');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -110,5 +110,5 @@ app.post('/delete', (req, res) => {
 
 /*** Port Setup ***/
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`Server has started successfully.`);
 });
